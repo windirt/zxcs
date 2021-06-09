@@ -81,14 +81,15 @@ def download_book(dl_url):
 
 
 def download_pic(pic_url):
+    #global filename
     html = get_one_page(pic_url)
     soup = BeautifulSoup(html, 'lxml')
     path = soup.h1.string + '.jpg'
-    url = soup.find("img", title="点击查看原图").get("src")
     try:
-        downloader(url=url, path=path)
+        url = soup.find("img", title="点击查看原图").get("src")
     except:
-        os.system("cp cover.jpg %s" % path)
+        url = soup.find("img", alt="（精校对版全本）").get("src")
+    downloader(url=url, path=path)
     return soup.h1.string
 
 
@@ -147,6 +148,7 @@ for result in results:
         if re.match(r'^\s*[第卷][0123456789一二三四五六七八九十零〇百千两]*[章回部节集卷].*',line):
             new_content.append("# " + line + "\n")
             continue
+        line = line.replace("　　","")
         new_content.append(line + "\n")
     new_content = "\n".join(new_content)
 

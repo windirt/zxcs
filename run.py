@@ -87,7 +87,10 @@ def download_pic(pic_url):
     html = get_one_page(pic_url)
     soup = BeautifulSoup(html, 'lxml')
     path = filename + '.jpg'
-    url = soup.find("img", title="点击查看原图").get("src")
+    try:
+        url = soup.find("img", title="点击查看原图").get("src")
+    except:
+        url = soup.find("img", alt="（精校对版全本）").get("src")
     downloader(url=url, path=path)
 
 
@@ -132,6 +135,7 @@ for line in lines:
     if re.match(r'^\s*[第卷][0123456789一二三四五六七八九十零〇百千两]*[章回部节集卷].*',line):
         new_content.append("# " + line + "\n")
         continue
+    line = line.replace("　　","")
     new_content.append(line + "\n")
 new_content = "\n".join(new_content)
 
@@ -145,9 +149,9 @@ os.system('pandoc "%s" -o "%s" -t epub3 --css=epub.css --epub-cover-image="%s"' 
 print("开始转换KEPUB文件.........")
 os.system('kepubify -i "%s"' % (epubname))
 print("删除残留文件......")
-os.system("rm %s" % (txtname))
-os.system("rm %s" % (jpgname))
-os.system("rm %s" % (rarname))
+os.system("rm '%s'" % (txtname))
+os.system("rm '%s'" % (jpgname))
+os.system("rm '%s'" % (rarname))
 os.system("mv *.kepub.epub ./kepub/")
 os.system("mv *.epub ./epub/")
 print("完成，收工，撒花！！🎉🎉")

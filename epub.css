@@ -41,6 +41,8 @@ h3.date { }
 p {
     margin: 0.5em 0em;
     line-height: 1em;
+    text-align: justify;
+    text-indent: 2em;
 }
 
 hr {

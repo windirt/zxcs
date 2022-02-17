@@ -54,69 +54,77 @@ def get_one_page(url):
         return None
 
 
-result = input("请输入书籍编号: ")
+# result = input("请输入书籍编号: ")
 
-pic_url = (book_url+result)
-dl_url = (download_url+result)
-
-
-
-def get_file_name(dl_url):
-    global title_string
-    global author_string
-    html = get_one_page(dl_url)
-    soup = BeautifulSoup(html, 'lxml')
-    path = soup.h2.string
-    title_string = re.search(r'(?<=《)[^》]+',path)[0]
-    author_string = re.search(r'(?<=作者：).*',path)[0]
-    return path
-
-filename = (get_file_name(dl_url))
-
-def download_book(dl_url):
-    global filename
-    html = get_one_page(dl_url)
-    soup = BeautifulSoup(html, 'lxml')
-    path = filename + '.rar'
-    url = soup.find("a", string="线路一").get("href")
-    downloader(url=url, path=path)
-
-
-def download_pic(pic_url):
-    global filename
-    html = get_one_page(pic_url)
-    soup = BeautifulSoup(html, 'lxml')
-    path = filename + '.jpg'
-    title = soup.find('title').string.split(" - ")[0]
-    print(title)
-    try:
-        url = soup.find("img", title="点击查看原图").get("src")
-    except:
-        url = soup.find("img", alt=title).get("src")
-    downloader(url=url, path=path)
+# pic_url = (book_url+result)
+# dl_url = (download_url+result)
 
 
 
-print("开始下载封面图片.....")
-download_pic(pic_url)
-print("开始下载书籍压缩文件.....")
-download_book(dl_url)
+# def get_file_name(dl_url):
+#     global title_string
+#     global author_string
+#     html = get_one_page(dl_url)
+#     soup = BeautifulSoup(html, 'lxml')
+#     path = soup.h2.string
+#     title_string = re.search(r'(?<=《)[^》]+',path)[0]
+#     author_string = re.search(r'(?<=作者：).*',path)[0]
+#     return path
 
-rarname = filename + ".rar"
-jpgname = filename + ".jpg"
-txtname = filename + ".txt"
-epubname = title_string + "-" + author_string + ".epub"
-print("正在解压缩文件到当前目录......")
-patoolib.extract_archive(rarname, outdir="./")
+# filename = (get_file_name(dl_url))
 
-print("开始文件转码.......")
-f = open(txtname, 'r', encoding="gb18030")
-content = f.read()
-f.close()
-f = open(txtname, 'w', encoding="utf-8")
-f.write(content)
-f.close()
+# def download_book(dl_url):
+#     global filename
+#     html = get_one_page(dl_url)
+#     soup = BeautifulSoup(html, 'lxml')
+#     path = filename + '.rar'
+#     url = soup.find("a", string="线路一").get("href")
+#     downloader(url=url, path=path)
 
+
+# def download_pic(pic_url):
+#     global filename
+#     html = get_one_page(pic_url)
+#     soup = BeautifulSoup(html, 'lxml')
+#     path = filename + '.jpg'
+#     title = soup.find('title').string.split(" - ")[0]
+#     print(title)
+#     try:
+#         url = soup.find("img", title="点击查看原图").get("src")
+#     except:
+#         url = soup.find("img", alt=title).get("src")
+#     downloader(url=url, path=path)
+
+
+
+# print("开始下载封面图片.....")
+# download_pic(pic_url)
+# print("开始下载书籍压缩文件.....")
+# download_book(dl_url)
+
+# rarname = filename + ".rar"
+# jpgname = filename + ".jpg"
+# txtname = filename + ".txt"
+# epubname = title_string + "-" + author_string + ".epub"
+# print("正在解压缩文件到当前目录......")
+# patoolib.extract_archive(rarname, outdir="./")
+
+# print("开始文件转码.......")
+# f = open(txtname, 'r', encoding="gb18030")
+# content = f.read()
+# f.close()
+# f = open(txtname, 'w', encoding="utf-8")
+# f.write(content)
+# f.close()
+
+txtname = sys.argv[1]
+
+try:
+    if sys.argv[2]:
+        jpgname = sys.argv[2]
+except:   
+    jpgname = "cover.jpg"
+        
 
 f = open(txtname,'r', encoding="utf-8")
 content = f.read()
@@ -125,8 +133,8 @@ f.close()
 
 lines = content.split("\n") 
 new_content = []
-new_content.append("% "+ title_string)
-new_content.append("% "+ author_string)
+# new_content.append("% "+ title_string)
+# new_content.append("% "+ author_string)
 for line in lines:
     if line == "更多精校小说尽在知轩藏书下载：http://www.zxcs.me/" or line == "==========================================================" or line == title_string or line == title_string + " 作者：" + author_string or line == "作者：" + author_string:
         continue
@@ -144,16 +152,17 @@ new_content = "\n".join(new_content)
 f = open(txtname,'w',encoding="utf=8")
 f.write(new_content)
 f.close
-    
+
+epubname = txtname.split(".")[0]+".epub"
 
 print("开始转换EPUB文件........")
 os.system('pandoc "%s" -o "%s" -t epub3 --css=epub.css --epub-cover-image="%s"' % (txtname, epubname, jpgname))
 print("开始转换KEPUB文件.........")
 os.system('kepubify -i "%s"' % (epubname))
 print("删除残留文件......")
-os.system("rm '%s'" % (txtname))
-os.system("rm '%s'" % (jpgname))
-os.system("rm '%s'" % (rarname))
+# os.system("rm '%s'" % (txtname))
+# os.system("rm '%s'" % (jpgname))
+# os.system("rm '%s'" % (rarname))
 os.system("mv *.kepub.epub ./kepub/")
 os.system("mv *.epub ./epub/")
 print("完成，收工，撒花！！🎉🎉")
